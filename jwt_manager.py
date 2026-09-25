@@ -110,16 +110,16 @@ class JwtManager:
                 "expires_at": expires_at
             })
         )
+        # Replace (not add to) the TOKEN cookie the login response set, so exactly one is sent.
+        del self.session.cookies["TOKEN"]
         self.session.cookies.set("TOKEN", token)
 
     def clear_token(self):
         """Remove the token from memory and from the keyring."""
         self.token_info = None
 
-        try:
-            self.session.cookies.pop("TOKEN")
-        except KeyError:
-            pass
+        # Removes every TOKEN cookie; pop() raised CookieConflictError when there were two.
+        del self.session.cookies["TOKEN"]
 
         try:
             keyring.delete_password(self.service_name, "TOKEN")
@@ -136,7 +136,8 @@ class JwtManager:
         if not self.token_info:
             return False
 
-        if time.time() > self.token_info["expires_at"]:
+        # Renew a minute early so a token never expires halfway through a request.
+        if time.time() > self.token_info["expires_at"] - 60:
             self.clear_token()
             return False
         return True

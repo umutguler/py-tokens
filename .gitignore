@@ -174,3 +174,12 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Local agent notes, secrets and IDE state - never publish
+.agent/
+.claude/
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
